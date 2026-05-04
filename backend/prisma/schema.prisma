@@ -1,29 +1,22 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Define o gerador do Prisma Client, que cria o cliente TypeScript
 generator client {
   provider = "prisma-client-js"
 }
 
-// Define a fonte de dados, neste caso, um banco de dados SQLite
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db" // Em produção, isso será sobrescrito pela variável de ambiente DATABASE_URL
+  url      = "file:./dev.db"
 }
 
-// Modelo para os usuários do sistema (ATUALIZADO PARA USAR EMAIL )
 model User {
   id          Int        @id @default(autoincrement())
-  companyName String     // Nome da oficina
-  name        String     // Nome do usuário/responsável
-  email       String     @unique // Email é o novo identificador único para login
+  companyName String
+  name        String
+  email       String     @unique
   password    String
   createdAt   DateTime   @default(now())
-  estimates   Estimate[] // Relação: um usuário pode ter muitos orçamentos
+  estimates   Estimate[]
 }
 
-// Modelo principal para os orçamentos
 model Estimate {
   id              Int      @id @default(autoincrement())
   mechanicName    String
@@ -33,15 +26,14 @@ model Estimate {
   createdAt       DateTime @default(now())
   statusUpdatedAt DateTime @updatedAt
 
-  // Relações
   user      User      @relation(fields: [userId], references: [id])
   userId    Int
+
   vehicle   Vehicle?
   parts     Part[]
-  services  Service[] // Renomeado de EstimateService para Service para simplicidade
+  services  Service[]
 }
 
-// Modelo para os veículos dos clientes
 model Vehicle {
   id          Int      @id @default(autoincrement())
   clientName  String
@@ -50,34 +42,29 @@ model Vehicle {
   brand       String
   model       String
   year        Int
-  
-  // Relação Um-para-Um com Orçamento
+
   estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId  Int      @unique
 }
 
-// Modelo para as peças utilizadas no orçamento
 model Part {
   id          Int      @id @default(autoincrement())
   description String
   quantity    Int
   unitPrice   Float
   commission  Float
-  
-  // Relação de volta para o Orçamento
+
   estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId  Int
 }
 
-// Modelo para os serviços (mão de obra) do orçamento
 model Service {
   id               Int      @id @default(autoincrement())
   description      String
   mechanicExecutor String
   price            Float
   commission       Float
-  
-  // Relação de volta para o Orçamento
+
   estimate         Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId       Int
 }

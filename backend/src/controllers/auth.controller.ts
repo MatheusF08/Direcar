@@ -6,64 +6,74 @@ import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-super-secreto-trocar-em-producao';
 
-/**
- * Registra um novo usuário no sistema usando username.
- */
+// REGISTER
 export const register = async (req: Request, res: Response) => {
-  const { username, password, name } = req.body;
+  const { companyName, name, email, password } = req.body;
 
-  if (!username || !password || !name) {
-    return res.status(400).json({ message: 'Nome de usuário, senha e nome são obrigatórios.' });
+  if (!companyName || !name || !email || !password) {
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await prisma.user.create({
       data: {
-        username,
-        password: hashedPassword,
+        companyName,
         name,
+        email,
+        password: hashedPassword,
       },
     });
-    res.status(201).json({ message: 'Usuário registrado com sucesso!', userId: newUser.id });
+
+    res.status(201).json({
+      message: 'Usuário registrado com sucesso!',
+      userId: newUser.id
+    });
+
   } catch (error: any) {
-    if (error.code === 'P2002') { // Erro de violação de constraint única (usuário já existe)
-      return res.status(409).json({ message: 'Este nome de usuário já está em uso.' });
+    if (error.code === 'P2002') {
+      return res.status(409).json({ message: 'Email já está em uso.' });
     }
-    console.error("Erro ao registrar usuário:", error);
+
+    console.error(error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
-/**
- * Autentica um usuário com username e retorna um token JWT.
- */
+// LOGIN
 export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ message: 'Nome de usuário e senha são obrigatórios.' });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email e senha são obrigatórios.' });
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: { email },
     });
 
-    const isPasswordValid = user ? await bcrypt.compare(password, user.password) : false;
+    const isValid = user && await bcrypt.compare(password, user.password);
 
-    if (!user || !isPasswordValid) {
+    if (!user || !isValid) {
       return res.status(401).json({ message: 'Credenciais inválidas.' });
     }
 
     const token = jwt.sign(
-      { userId: user.id, name: user.name },
+      {
+        userId: user.id,
+        name: user.name,
+        companyName: user.companyName
+      },
       JWT_SECRET,
       { expiresIn: '8h' }
     );
+
     res.status(200).json({ token });
+
   } catch (error) {
-    console.error("Erro ao fazer login:", error);
+    console.error(error);
     res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };

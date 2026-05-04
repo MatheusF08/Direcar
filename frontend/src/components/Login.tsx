@@ -1,8 +1,5 @@
-// frontend/src/components/Login.tsx - VERSÃO FINAL E CORRIGIDA
-
 import React, { useState } from 'react';
 
-// Define a URL da API a partir das variáveis de ambiente, com fallback para localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 interface LoginProps {
@@ -20,9 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
-      // CORREÇÃO CRÍTICA: Usa crases (`) para permitir a interpolação da variável ${API_URL}
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,7 +27,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
       const data = await response.json();
 
       if (!response.ok) {
-        // Usa a mensagem de erro do servidor, ou uma mensagem padrão
         throw new Error(data.message || 'Falha ao fazer login.');
       }
 
@@ -56,13 +50,14 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
         <h2>Login do Sistema</h2>
         {error && <p className="error-message">{error}</p>}
         <div className="input-group">
-          <label htmlFor="email">Usuário</label>
+          <label htmlFor="email">Email</label>
           <input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            placeholder="seu@email.com"
           />
         </div>
         <div className="input-group">
