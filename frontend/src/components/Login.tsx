@@ -1,40 +1,40 @@
-// frontend/src/components/Login.tsx (Código Corrigido e Final)
+// frontend/src/components/Login.tsx
 
 import React, { useState } from 'react';
-import './Login.css';
+
+// ✅ PASSO 1: Definir a URL da API a partir das variáveis de ambiente
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 interface LoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: ( ) => void;
   onSwitchToRegister: () => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => {
-  // O estado agora armazena 'email'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
     try {
-      // Garante que a URL da API está vindo da variável de ambiente
-      const API_URL = import.meta.env.VITE_API_URL;
-
+      // ✅ PASSO 2: Usar a variável API_URL na chamada fetch
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // O corpo da requisição agora envia 'email'
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Erro no login.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao fazer login.');
       }
 
+      const data = await response.json();
       if (data.token) {
         localStorage.setItem('authToken', data.token);
         onLoginSuccess();
@@ -43,39 +43,45 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
       }
     } catch (err: any) {
       setError(err.message);
+      console.error('Falha no login:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="login-box">
-      <h2>Login do Sistema</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container">
+      <form onSubmit={handleSubmit} className="login-form">
+        <h2>Login do Sistema</h2>
+        {error && <p className="error-message">{error}</p>}
         <div className="input-group">
-          {/* O label e o input agora são para 'Email' */}
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">Usuário</label>
           <input
-            type="email"
             id="email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="seu@email.com"
             required
           />
         </div>
         <div className="input-group">
           <label htmlFor="password">Senha</label>
           <input
-            type="password"
             id="password"
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="login-button">Entrar</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Entrando...' : 'Entrar'}
+        </button>
         <p className="switch-form-text">
-          Não tem uma conta? <span onClick={onSwitchToRegister}>Registre-se</span>
+          Não tem uma conta?{' '}
+          <span onClick={onSwitchToRegister} className="switch-form-link">
+            Cadastre-se
+          </span>
         </p>
       </form>
     </div>
