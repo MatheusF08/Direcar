@@ -1,1 +1,26 @@
 /// <reference types="vite/client" />
+
+/**
+ * Interface para definir os tipos das variáveis de ambiente
+ * que são expostas pelo Vite através de `import.meta.env`.
+ * Isso fornece autocompletar e segurança de tipos.
+ */
+interface ImportMetaEnv {
+  /**
+   * A URL base da API do backend.
+   * Esta variável é definida no arquivo .env local ou nas configurações de ambiente da Vercel.
+   * Exemplo: 'http://localhost:3001' ou 'https://sua-api.onrender.com'
+   */
+  readonly VITE_API_URL: string;
+
+  // Você pode adicionar outras variáveis de ambiente aqui no futuro.
+  // Ex: readonly VITE_SOME_OTHER_KEY: string;
+}
+
+/**
+ * Estende a interface global `ImportMeta` para incluir a propriedade `env`
+ * com os tipos que acabamos de definir.
+ */
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

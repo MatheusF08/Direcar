@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -18,8 +18,11 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Adicionado para garantir que os tipos do Vite sejam carregados */
+    "types": ["vite/client"]
   },
-  "include": ["src", "src/vite-env.d.ts"], // <--- A MUDANÇA ESTÁ AQUI
+  "include": ["src", "vite-env.d.ts"], // <-- GARANTE A INCLUSÃO DO ARQUIVO DE TIPOS
   "references": [{ "path": "./tsconfig.node.json" }]
 }
