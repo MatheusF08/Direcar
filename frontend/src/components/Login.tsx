@@ -1,39 +1,26 @@
 // frontend/src/components/Login.tsx
-
 import React, { useState } from 'react';
-
-// ✅ PASSO 1: Definir a URL da API a partir das variáveis de ambiente
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
-interface LoginProps {
-  onLoginSuccess: ( ) => void;
-  onSwitchToRegister: () => void;
-}
-
+interface LoginProps { onLoginSuccess: ( ) => void; onSwitchToRegister: () => void; }
 const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-
     try {
-      // ✅ PASSO 2: Usar a variável API_URL na chamada fetch
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Falha ao fazer login.');
       }
-
       const data = await response.json();
       if (data.token) {
         localStorage.setItem('authToken', data.token);
@@ -48,7 +35,6 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
       setIsLoading(false);
     }
   };
-
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit} className="login-form">
@@ -56,36 +42,16 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
         {error && <p className="error-message">{error}</p>}
         <div className="input-group">
           <label htmlFor="email">Usuário</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="input-group">
           <label htmlFor="password">Senha</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Entrando...' : 'Entrar'}
-        </button>
-        <p className="switch-form-text">
-          Não tem uma conta?{' '}
-          <span onClick={onSwitchToRegister} className="switch-form-link">
-            Cadastre-se
-          </span>
-        </p>
+        <button type="submit" disabled={isLoading}>{isLoading ? 'Entrando...' : 'Entrar'}</button>
+        <p className="switch-form-text">Não tem uma conta?{' '}<span onClick={onSwitchToRegister} className="switch-form-link">Cadastre-se</span></p>
       </form>
     </div>
   );
 };
-
 export default Login;
