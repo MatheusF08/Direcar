@@ -28,7 +28,6 @@ model Estimate {
 
   user      User      @relation(fields: [userId], references: [id])
   userId    Int
-
   vehicle   Vehicle?
   parts     Part[]
   services  Service[]
@@ -42,7 +41,7 @@ model Vehicle {
   brand       String
   model       String
   year        Int
-
+  
   estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId  Int      @unique
 }
@@ -53,7 +52,7 @@ model Part {
   quantity    Int
   unitPrice   Float
   commission  Float
-
+  
   estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId  Int
 }
@@ -64,7 +63,7 @@ model Service {
   mechanicExecutor String
   price            Float
   commission       Float
-
+  
   estimate         Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
   estimateId       Int
 }
