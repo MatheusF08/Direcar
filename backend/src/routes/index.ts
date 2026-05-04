@@ -5,7 +5,7 @@ import {
   handleCreateEstimate,
   handleGetAllEstimates,
   handleGetEstimateById,
-  handleUpdateEstimateStatus,
+  handleUpdateEstimate,
   handleDeleteEstimate
 } from '../controllers/estimate.controller';
 
@@ -15,7 +15,7 @@ const router = Router();
 router.post("/estimates", authenticateToken, handleCreateEstimate);
 router.get("/estimates", authenticateToken, handleGetAllEstimates);
 router.get("/estimates/:id", authenticateToken, handleGetEstimateById);
-router.patch("/estimates/:id/status", authenticateToken, handleUpdateEstimateStatus);
+router.patch("/estimates/:id/status", authenticateToken, handleUpdateEstimate);
 router.delete("/estimates/:id", authenticateToken, handleDeleteEstimate);
 
 export default router;
