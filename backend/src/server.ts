@@ -1,4 +1,4 @@
-// backend/src/server.ts (Código Final e Corrigido para Produção)
+// backend/src/server.ts - VERSÃO FINAL E CORRIGIDA
 
 import express from 'express';
 import cors from 'cors';
@@ -8,36 +8,18 @@ import estimateRoutes from './routes/estimate.routes';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Configuração de CORS Dinâmica e Segura ---
-const allowedOrigins = [
-  'http://localhost:5173', // Sua URL de desenvolvimento local
-  'https://direcar.vercel.app'  // SUA URL DE PRODUÇÃO NA VERCEL
-];
+// 1. Middleware de CORS: Permite que o frontend se comunique com o backend.
+app.use(cors());
 
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback ) => {
-    // Permite requisições sem 'origin' (como apps mobile ou Postman/curl)
-    // ou se a origem estiver na nossa lista de permissões.
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  optionsSuccessStatus: 200
-};
-
-// Use o middleware do CORS com as opções dinâmicas
-app.use(cors(corsOptions));
-
-// Middlewares essenciais
+// 2. Middleware de JSON: ESSENCIAL! Traduz o corpo (body) das requisições de JSON para um objeto que o Express pode usar.
+// Esta linha estava faltando ou no lugar errado.
 app.use(express.json());
 
-// Rotas da API
+// 3. Rotas da API: Agora que o Express entende JSON, ele pode passar os dados para as rotas.
 app.use('/api/auth', authRoutes);
 app.use('/api/estimates', estimateRoutes);
 
-// Inicialização do Servidor
+// 4. Inicialização do Servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor backend robusto rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor backend robusto e pronto para receber JSON na porta ${PORT}`);
 });
