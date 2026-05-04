@@ -7,7 +7,7 @@ import './App.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export type StatusType = 'AG_APROVACAO' | 'APROVADO' | 'FINALIZADO' | 'CANCELADO';
 export interface Vehicle { id: number; clientName: string; clientPhone: string; plate: string; brand: string; model: string; year: number; }
