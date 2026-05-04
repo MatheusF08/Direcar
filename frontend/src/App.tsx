@@ -4,9 +4,13 @@ import EstimateForm from './components/EstimateForm';
 import VehicleList from './components/VehicleList';
 import './App.css';
 
-// SUA CORREÇÃO APLICADA: Imports corretos para jspdf e jspdf-autotable.
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+// --- DEFINIÇÃO DA VARIÁVEL DE AMBIENTE ---
+// Esta linha lê a URL da API a partir das configurações do Vercel (em produção )
+// ou usa 'http://localhost:3001' como padrão (em desenvolvimento local ).
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // --- Definições de Tipos Globais ---
 export type StatusType = 'AG_APROVACAO' | 'APROVADO' | 'FINALIZADO' | 'CANCELADO';
@@ -16,7 +20,7 @@ export interface Service { id: number; description: string; mechanicExecutor: st
 export interface Estimate { id: number; mechanicName: string; observations: string; totalPrice: number; status: StatusType; createdAt: string; statusUpdatedAt: string; vehicle: Vehicle; parts: Part[]; services: Service[]; }
 
 // --- Componente Principal App ---
-function App() {
+function App( ) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('authToken'));
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
@@ -26,13 +30,14 @@ function App() {
     const token = localStorage.getItem('authToken');
     if (!token) return;
     try {
-      const response = await fetch('http://localhost:3001/api/estimates', { headers: { 'Authorization': `Bearer ${token}` } } );
+      // CORREÇÃO APLICADA: Usa a variável API_URL
+      const response = await fetch(`${API_URL}/api/estimates`, { headers: { 'Authorization': `Bearer ${token}` } } );
       if (!response.ok) throw new Error('Falha ao buscar orçamentos.');
       const data: Estimate[] = await response.json();
       setEstimates(data);
     } catch (error) {
       console.error(error);
-      if (error instanceof Error && error.message.includes('401')) handleLogout();
+      if (error instanceof Error && String(error).includes('401')) handleLogout();
     }
   };
 
@@ -57,7 +62,8 @@ function App() {
     if (!token || !editedEstimate) return;
     const updateData = { status: editedEstimate.status };
     try {
-      const response = await fetch(`http://localhost:3001/api/estimates/${editedEstimate.id}`, {
+      // CORREÇÃO APLICADA: Usa a variável API_URL
+      const response = await fetch(`${API_URL}/api/estimates/${editedEstimate.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(updateData ),
@@ -81,7 +87,8 @@ function App() {
     const token = localStorage.getItem('authToken');
     if (!token) return;
     try {
-      const response = await fetch(`http://localhost:3001/api/estimates/${id}`, {
+      // CORREÇÃO APLICADA: Usa a variável API_URL
+      const response = await fetch(`${API_URL}/api/estimates/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       } );
@@ -94,13 +101,11 @@ function App() {
     }
   };
 
-  // SUA FUNÇÃO PROFISSIONAL APLICADA: Gera um PDF estruturado e com a identidade visual da marca.
   const handleGeneratePdf = (estimate: Estimate) => {
     try {
       const doc = new jsPDF();
       const { vehicle, parts, services, totalPrice, mechanicName, observations, id, createdAt } = estimate;
 
-      // ===== HEADER =====
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
       doc.text('DIRECAR', 14, 20);
@@ -111,64 +116,43 @@ function App() {
       doc.text(`Data: ${new Date(createdAt).toLocaleDateString('pt-BR')}`, 140, 26);
       doc.line(14, 30, 196, 30);
 
-      // ===== CLIENTE =====
       doc.setFontSize(11);
       doc.text(`Cliente: ${vehicle.clientName}`, 14, 40);
       doc.text(`Telefone: ${vehicle.clientPhone}`, 14, 46);
       doc.text(`Veículo: ${vehicle.brand} ${vehicle.model} ${vehicle.year}`, 14, 52);
       doc.text(`Placa: ${vehicle.plate}`, 14, 58);
 
-      // ===== PEÇAS =====
       autoTable(doc, {
         startY: 65,
         head: [['Peça', 'Qtd', 'Valor', 'Subtotal']],
-        body: parts.map(p => [
-          p.description,
-          p.quantity,
-          `R$ ${p.unitPrice.toFixed(2)}`,
-          `R$ ${(p.quantity * p.unitPrice).toFixed(2)}`
-        ]),
+        body: parts.map(p => [ p.description, p.quantity, `R$ ${p.unitPrice.toFixed(2)}`, `R$ ${(p.quantity * p.unitPrice).toFixed(2)}` ]),
         theme: 'grid',
-        headStyles: { fillColor: [255, 106, 0] } // Laranja Direcar
+        headStyles: { fillColor: [255, 106, 0] }
       });
 
-      // ===== SERVIÇOS =====
       autoTable(doc, {
         startY: (doc as any).lastAutoTable.finalY + 5,
         head: [['Serviço', 'Executor', 'Valor']],
-        body: services.map(s => [
-          s.description,
-          s.mechanicExecutor,
-          `R$ ${s.price.toFixed(2)}`
-        ]),
+        body: services.map(s => [ s.description, s.mechanicExecutor, `R$ ${s.price.toFixed(2)}` ]),
         theme: 'grid',
         headStyles: { fillColor: [255, 106, 0] }
       });
 
       const finalY = (doc as any).lastAutoTable.finalY;
 
-      // ===== TOTAL =====
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text(
-        `TOTAL: R$ ${totalPrice.toFixed(2)}`,
-        196,
-        finalY + 10,
-        { align: 'right' }
-      );
+      doc.text(`TOTAL: R$ ${totalPrice.toFixed(2)}`, 196, finalY + 10, { align: 'right' });
 
-      // ===== OBS E MECÂNICO =====
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('Observações:', 14, finalY + 20);
       doc.text(observations || '-', 14, finalY + 25, { maxWidth: 180 });
       doc.text(`Mecânico: ${mechanicName}`, 14, finalY + 40);
 
-      // ===== ASSINATURA =====
       doc.line(14, finalY + 60, 80, finalY + 60);
       doc.text('Assinatura do Cliente', 14, finalY + 65);
 
-      // ===== DOWNLOAD =====
       doc.save(`orcamento_${String(id).padStart(4, '0')}.pdf`);
 
     } catch (error) {
