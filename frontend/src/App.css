@@ -1,25 +1,110 @@
-body {
-  background: url('./assets/DIRECAR.webp') no-repeat center center fixed;
-  background-size: cover;
+/* =============================================== */
+/* Estilos para a Página de Login e Registro       */
+/* =============================================== */
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #333;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.login-title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff6a00; /* Laranja Direcar */
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-form {
+  background-color: #444;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  color: #f0f0f0;
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 25px;
   color: #fff;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 15, 15, 0.85);
-  z-index: -1;
+.input-group {
+  margin-bottom: 20px;
 }
 
-.app-header {
-  background: #1e1e1e;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 2px solid #ff6a00;
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
 }
 
-main {
-  padding: 20px;
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #555;
+  color: #fff;
+  box-sizing: border-box;
 }
+
+.login-form button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ff6a00; /* Laranja Direcar */
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+  background-color: #e65c00;
+}
+
+.login-form button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff8a80;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.switch-form-text {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.switch-form-link {
+  color: #ff6a00;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+
+/* =============================================== */
+/* Estilos para a Aplicação Principal (Pós-Login)  */
+/* =============================================== */
+
+/* Adicione aqui os estilos para .app-container, .app-header, etc. quando precisar */
+

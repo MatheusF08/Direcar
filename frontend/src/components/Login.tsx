@@ -23,13 +23,10 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || 'Falha ao fazer login.');
       }
-
       if (data.token) {
         localStorage.setItem('authToken', data.token);
         onLoginSuccess();
@@ -46,33 +43,20 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
 
   return (
     <div className="login-container">
+      {/* TÍTULO ADICIONADO AQUI */}
+      <h1 className="login-title">Direcar</h1>
       <form onSubmit={handleSubmit} className="login-form">
         <h2>Login do Sistema</h2>
         {error && <p className="error-message">{error}</p>}
         <div className="input-group">
           <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="seu@email.com"
-          />
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="input-group">
           <label htmlFor="password">Senha</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Entrando...' : 'Entrar'}
-        </button>
+        <button type="submit" disabled={isLoading}>{isLoading ? 'Entrando...' : 'Entrar'}</button>
         <p className="switch-form-text">
           Não tem uma conta?{' '}
           <span onClick={onSwitchToRegister} className="switch-form-link">
