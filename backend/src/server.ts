@@ -1,50 +1,43 @@
+// backend/src/server.ts (Código Final e Corrigido para Produção)
+
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import estimateRoutes from './routes/estimate.routes';
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
 // --- Configuração de CORS Dinâmica e Segura ---
-
-// 1. Lista de origens permitidas.
-//    Em desenvolvimento, permitirá o localhost.
-//    Em produção, permitirá a URL do seu frontend na Vercel.
 const allowedOrigins = [
-  'http://localhost:5173', // Para desenvolvimento local
-  process.env.FRONTEND_URL    // Para produção (ex: 'https://direcar.vercel.app' )
+  'http://localhost:5173', // Sua URL de desenvolvimento local
+  'https://direcar.vercel.app'  // SUA URL DE PRODUÇÃO NA VERCEL
 ];
 
 const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    // Se a origem da requisição estiver na nossa lista (ou se for uma requisição sem origem, como de um app mobile ou Postman), permite.
+  origin: (origin, callback ) => {
+    // Permite requisições sem 'origin' (como apps mobile ou Postman/curl)
+    // ou se a origem estiver na nossa lista de permissões.
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // Se a origem não estiver na lista, rejeita a requisição.
       callback(new Error('Not allowed by CORS'));
     }
   },
   optionsSuccessStatus: 200
 };
 
-// 2. Use o middleware do CORS com as opções dinâmicas.
-//    Isso deve vir antes de qualquer outra rota.
+// Use o middleware do CORS com as opções dinâmicas
 app.use(cors(corsOptions));
 
-// Outros middlewares essenciais
+// Middlewares essenciais
 app.use(express.json());
 
-// Registro das Rotas
+// Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/estimates', estimateRoutes);
 
-// --- Inicialização do Servidor com Porta Dinâmica ---
-
-// 3. Usa a porta fornecida pelo ambiente de produção (Render) ou 3001 como padrão.
-const PORT = process.env.PORT || 3001;
-
+// Inicialização do Servidor
 app.listen(PORT, () => {
-  // Remove o 'http://localhost:' do log para não confundir em produção.
-  console.log(`🚀 Servidor backend robusto rodando na porta ${PORT}` );
+  console.log(`🚀 Servidor backend robusto rodando na porta ${PORT}`);
 });
