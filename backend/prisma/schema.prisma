@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Define o gerador do Prisma Client, que cria o cliente TypeScript
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Define a fonte de dados, neste caso, um banco de dados SQLite
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Modelo para os usuários do sistema
+model User {
+  id        Int        @id @default(autoincrement( ))
+  username  String     @unique
+  name      String
+  password  String
+  estimates Estimate[] // Relação: um usuário pode ter muitos orçamentos
+}
+
+// Modelo para os veículos dos clientes
+model Vehicle {
+  id          Int      @id @default(autoincrement())
+  clientName  String
+  clientPhone String
+  plate       String   @unique
+  brand       String
+  model       String
+  year        Int
+  createdAt   DateTime @default(now())
+  Estimate    Estimate? // Relação: um veículo está associado a um orçamento
+}
+
+// Modelo principal para os orçamentos
+model Estimate {
+  id             Int               @id @default(autoincrement())
+  mechanicName   String
+  observations   String?
+  totalPrice     Float             @default(0)
+  status         String            @default("AG_APROVACAO")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  
+  // Armazena a data da última vez que o status foi alterado,
+  // crucial para calcular os dias na oficina.
+  statusUpdatedAt DateTime         @default(now())
+
+  // Relação Um-para-Um com Veículo
+  vehicleId      Int               @unique
+  vehicle        Vehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  // Relação Muitos-para-Um com Usuário
+  userId         Int
+  user           User              @relation(fields: [userId], references: [id])
+
+  // Relação Um-para-Muitos com Peças e Serviços
+  parts          Part[]
+  services       EstimateService[]
+}
+
+// Modelo para as peças utilizadas no orçamento
+model Part {
+  id          Int     @id @default(autoincrement())
+  description String
+  quantity    Int
+  unitPrice   Float
+  commission  Float   @default(10) // Comissão padrão de 10% sobre as peças
+
+  // Relação de volta para o Orçamento
+  estimateId  Int
+  estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+}
+
+// Modelo para os serviços (mão de obra) do orçamento
+model EstimateService {
+  id               Int    @id @default(autoincrement())
+  description      String
+  mechanicExecutor String
+  price            Float
+  commission       Float
+
+  // Relação de volta para o Orçamento
+  estimateId       Int
+  estimate         Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+}

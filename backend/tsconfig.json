@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // --- CORREÇÕES AQUI ---
+    "rootDir": "./src", // 1. Define explicitamente o diretório raiz do código-fonte.
+    "typeRoots": [      // 2. Garante que ele procure tipos em ambos os locais.
+      "./node_modules/@types",
+      "./src/@types"
+    ]
+  },
+  "include": [
+    "src/**/*.ts" // Garante que todos os arquivos .ts em src sejam incluídos.
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

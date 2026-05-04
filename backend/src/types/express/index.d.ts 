@@ -1,0 +1,11 @@
+// Este arquivo estende a interface Request do Express globalmente
+import { Request } from "express";
+
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: {
+      userId: number; // Mantendo userId para consistência com o que geramos no token
+      name: string;
+    };
+  }
+}
