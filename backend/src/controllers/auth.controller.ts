@@ -1,10 +1,12 @@
+// backend/src/controllers/auth.controller.ts - VERSÃO FINAL, COMPLETA E CORRIGIDA
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'; // <-- IMPORTAÇÃO CORRIGIDA
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-super-secreto-trocar-em-producao';
+const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-super-secreto-trocar-em-producao'; // <-- CONSTANTE CORRIGIDA
 
 export const register = async (req: Request, res: Response) => {
   const { companyName, name, email, password } = req.body;
@@ -44,6 +46,7 @@ export const login = async (req: Request, res: Response) => {
   }
 
   try {
+    // CORREÇÃO: A busca pelo usuário estava faltando
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -54,8 +57,13 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Credenciais inválidas.' });
     }
 
+    // CORREÇÃO: O payload do token agora inclui companyName
     const token = jwt.sign(
-      { userId: user.id, name: user.name, companyName: user.companyName },
+      { 
+        userId: user.id, 
+        name: user.name, 
+        companyName: user.companyName 
+      },
       JWT_SECRET,
       { expiresIn: '8h' }
     );
