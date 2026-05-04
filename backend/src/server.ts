@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 
 // 2. Middleware de JSON: ESSENCIAL! Traduz o corpo (body) das requisições de JSON para um objeto que o Express pode usar.
-// Esta linha estava faltando ou no lugar errado.
+// Esta é a linha que estava faltando ou no lugar errado.
 app.use(express.json());
 
 // 3. Rotas da API: Agora que o Express entende JSON, ele pode passar os dados para as rotas.
