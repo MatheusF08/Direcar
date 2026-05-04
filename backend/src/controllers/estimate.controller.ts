@@ -1,206 +1,83 @@
-import { Response } from 'express';
-import { AuthenticatedRequest } from '../middleware/auth.middleware';
-import * as estimateService from '../services/estimate.service';
+import { Request, Response } from 'express';
+import * as EstimateService from '../services/estimate.service';
 
-// ==============================
-// CREATE
-// ==============================
-export const handleCreateEstimate = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+// CORREÇÃO: A interface agora reflete o payload completo do token JWT
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: number;
+    name: string;
+    companyName: string;
+  };
+}
+
+export const create = async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Não autorizado. Token inválido ou ausente.' });
+  }
+
   try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(403).json({
-        message: 'ID do usuário não encontrado no token.'
-      });
-    }
-
-    const estimateData = req.body;
-
-    const newEstimate = await estimateService.createEstimate(
-      estimateData,
-      userId
-    );
-
+    const estimateData = {
+      ...req.body,
+      userId: req.user.userId,
+    };
+    
+    const newEstimate = await EstimateService.createEstimate(estimateData);
     res.status(201).json(newEstimate);
   } catch (error: any) {
-    console.error('Erro ao criar orçamento:', error);
-
-    res.status(500).json({
-      message: 'Erro interno ao criar orçamento',
-      error: error.message
-    });
+    console.error("Erro ao criar orçamento:", error);
+    res.status(500).json({ message: 'Erro interno do servidor ao criar orçamento.' });
   }
 };
 
-// ==============================
-// GET ALL
-// ==============================
-export const handleGetAllEstimates = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const getAll = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(403).json({
-        message: 'ID do usuário não encontrado no token.'
-      });
-    }
-
-    const estimates =
-      await estimateService.getAllEstimatesByUserId(userId);
-
-    res.json(estimates);
+    const estimates = await EstimateService.getAllEstimates();
+    res.status(200).json(estimates);
   } catch (error: any) {
-    console.error('Erro ao buscar orçamentos:', error);
-
-    res.status(500).json({
-      message: 'Erro interno ao buscar orçamentos',
-      error: error.message
-    });
+    console.error("Erro ao buscar orçamentos:", error);
+    res.status(500).json({ message: 'Erro interno do servidor ao buscar orçamentos.' });
   }
 };
 
-// ==============================
-// GET BY ID
-// ==============================
-export const handleGetEstimateById = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const getById = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    const estimateId = parseInt(req.params.id);
-
-    if (!userId) {
-      return res.status(403).json({
-        message: 'ID do usuário não encontrado no token.'
-      });
+    const id = parseInt(req.params.id, 10);
+    const estimate = await EstimateService.getEstimateById(id);
+    if (estimate) {
+      res.status(200).json(estimate);
+    } else {
+      res.status(404).json({ message: 'Orçamento não encontrado.' });
     }
-
-    const estimate = await estimateService.getEstimateById(
-      estimateId
-    );
-
-    if (!estimate) {
-      return res.status(404).json({
-        message: 'Orçamento não encontrado.'
-      });
-    }
-
-    // 🔒 valida dono
-    if (estimate.userId !== userId) {
-      return res.status(403).json({
-        message: 'Acesso negado.'
-      });
-    }
-
-    res.json(estimate);
   } catch (error: any) {
-    console.error('Erro ao buscar orçamento:', error);
-
-    res.status(500).json({
-      message: 'Erro interno',
-      error: error.message
-    });
+    console.error("Erro ao buscar orçamento por ID:", error);
+    res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
 
-// ==============================
-// UPDATE
-// ==============================
-export const handleUpdateEstimate = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const updateStatus = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    const estimateId = parseInt(req.params.id);
-    const data = req.body;
+    const id = parseInt(req.params.id, 10);
+    const { status } = req.body;
 
-    if (!userId) {
-      return res.status(403).json({
-        message: 'ID do usuário não encontrado no token.'
-      });
+    if (!status) {
+      return res.status(400).json({ message: 'O novo status é obrigatório.' });
     }
-
-    const existingEstimate =
-      await estimateService.getEstimateById(estimateId);
-
-    if (!existingEstimate) {
-      return res.status(404).json({
-        message: 'Orçamento não encontrado.'
-      });
-    }
-
-    if (existingEstimate.userId !== userId) {
-      return res.status(403).json({
-        message:
-          'Acesso negado. Você não é o proprietário deste orçamento.'
-      });
-    }
-
-    const updatedEstimate =
-      await estimateService.updateEstimate(estimateId, data);
-
-    res.json(updatedEstimate);
+    
+    const updatedEstimate = await EstimateService.updateEstimateStatus(id, status);
+    res.status(200).json(updatedEstimate);
   } catch (error: any) {
-    console.error('Erro ao atualizar orçamento:', error);
-
-    res.status(500).json({
-      message: 'Erro ao atualizar orçamento',
-      error: error.message
-    });
+    console.error("Erro ao atualizar status do orçamento:", error);
+    res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
 
-// ==============================
-// DELETE
-// ==============================
-export const handleDeleteEstimate = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
+export const remove = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    const estimateId = parseInt(req.params.id);
-
-    if (!userId) {
-      return res.status(403).json({
-        message: 'ID do usuário não encontrado no token.'
-      });
-    }
-
-    const existingEstimate =
-      await estimateService.getEstimateById(estimateId);
-
-    if (!existingEstimate) {
-      return res.status(404).json({
-        message: 'Orçamento não encontrado.'
-      });
-    }
-
-    if (existingEstimate.userId !== userId) {
-      return res.status(403).json({
-        message:
-          'Acesso negado. Você não é o proprietário deste orçamento.'
-      });
-    }
-
-    await estimateService.deleteEstimate(estimateId);
-
+    const id = parseInt(req.params.id, 10);
+    await EstimateService.deleteEstimate(id);
     res.status(204).send();
   } catch (error: any) {
-    console.error('Erro ao deletar orçamento:', error);
-
-    res.status(500).json({
-      message: 'Erro ao deletar orçamento',
-      error: error.message
-    });
+    console.error("Erro ao deletar orçamento:", error);
+    res.status(500).json({ message: 'Erro interno do servidor.' });
   }
 };
