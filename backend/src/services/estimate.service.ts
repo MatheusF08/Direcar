@@ -2,83 +2,73 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// ... (as interfaces VehicleData, PartData, ServiceData permanecem as mesmas)
-
-interface VehicleData {
-  clientName: string; clientPhone: string; plate: string; brand: string; model: string; year: number;
-}
-interface PartData {
-  description: string; quantity: number; unitPrice: number; commission: number;
-}
-interface ServiceData {
-  description: string; mechanicExecutor: string; price: number; commission: number;
-}
-interface EstimateData {
-  mechanicName: string; observations?: string; userId: number; vehicle: VehicleData; parts: PartData[]; services: ServiceData[];
-}
-
-export const createEstimate = async (data: EstimateData) => {
-  const { mechanicName, observations, userId, vehicle, parts, services } = data;
-
-  const totalPartsPrice = parts.reduce((sum, part) => sum + part.quantity * part.unitPrice, 0);
-  const totalServicesPrice = services.reduce((sum, service) => sum + service.price, 0);
-  const totalPrice = totalPartsPrice + totalServicesPrice;
-
-  // 💥 SOLUÇÃO CORRETA APLICADA (SUA RECOMENDAÇÃO)
-  // Trocamos 'userId: userId' por 'user: { connect: { id: userId } }'
-  // Isso força o Prisma a usar o tipo 'EstimateCreateInput' relacional.
-  const newEstimate = await prisma.estimate.create({
+export const createEstimate = async (data: any) => {
+  return prisma.estimate.create({
     data: {
-      mechanicName,
-      observations,
-      totalPrice,
-      user: { // <-- CORREÇÃO AQUI
-        connect: { id: userId },
-      },
+      mechanicName: data.mechanicName,
+      observations: data.observations,
+      totalPrice: data.totalPrice,
+      userId: data.userId,
+
       vehicle: {
-        create: vehicle,
+        create: data.vehicle
       },
-      parts: {
-        create: parts,
-      },
-      services: {
-        create: services,
-      },
+
+      parts: data.parts?.length
+        ? { create: data.parts }
+        : undefined,
+
+      services: data.services?.length
+        ? { create: data.services }
+        : undefined,
     },
     include: {
       vehicle: true,
       parts: true,
-      services: true,
+      services: true
+    }
+  });
+};
+
+export const getAllEstimates = async (userId: number) => {
+  return prisma.estimate.findMany({
+    where: {
+      userId: userId
     },
-  });
-
-  return newEstimate;
-};
-
-// ... (o resto do arquivo: getAllEstimates, getEstimateById, etc. permanece o mesmo)
-
-export const getAllEstimates = async () => {
-  return await prisma.estimate.findMany({
-    include: { vehicle: true, parts: true, services: true },
-    orderBy: { createdAt: 'desc' },
+    include: {
+      vehicle: true,
+      parts: true,
+      services: true
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
   });
 };
 
-export const getEstimateById = async (id: number) => {
-  return await prisma.estimate.findUnique({
-    where: { id },
-    include: { vehicle: true, parts: true, services: true },
+export const getEstimateById = async (id: number, userId: number) => {
+  return prisma.estimate.findFirst({
+    where: {
+      id: id,
+      userId: userId
+    },
+    include: {
+      vehicle: true,
+      parts: true,
+      services: true
+    }
   });
 };
 
-export const updateEstimateStatus = async (id: number, status: string) => {
-  return await prisma.estimate.update({
+export const updateEstimateStatus = async (id: number, status: string, userId: number) => {
+  return prisma.estimate.update({
     where: { id },
     data: { status },
-    include: { vehicle: true, parts: true, services: true },
   });
 };
 
-export const deleteEstimate = async (id: number) => {
-  return await prisma.estimate.delete({ where: { id } });
+export const deleteEstimate = async (id: number, userId: number) => {
+  return prisma.estimate.delete({
+    where: { id }
+  });
 };
