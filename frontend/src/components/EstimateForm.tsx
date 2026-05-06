@@ -1,12 +1,10 @@
 import { useState, useMemo } from 'react';
 import './EstimateForm.css';
 
-// 1. DEFINIÇÃO DAS PROPS: Diz ao TypeScript que este componente espera receber uma função.
 interface EstimateFormProps {
   onEstimateCreated: () => void;
 }
 
-// Tipos para os dados do formulário
 interface VehicleData {
   clientName: string;
   clientPhone: string;
@@ -30,104 +28,145 @@ interface ServiceData {
   commission: number;
 }
 
-// 2. RECEBENDO A PROP: O componente agora recebe 'onEstimateCreated' como um argumento.
 const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
-  // --- Estados do formulário ---
-  const [vehicle, setVehicle] = useState<VehicleData>({ clientName: '', clientPhone: '', plate: '', brand: '', model: '', year: '' });
+  const [vehicle, setVehicle] = useState<VehicleData>({
+    clientName: '',
+    clientPhone: '',
+    plate: '',
+    brand: '',
+    model: '',
+    year: ''
+  });
+
   const [parts, setParts] = useState<PartData[]>([]);
   const [services, setServices] = useState<ServiceData[]>([]);
   const [mechanicName, setMechanicName] = useState('');
   const [observations, setObservations] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // --- Funções de manipulação do formulário ---
   const handleVehicleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setVehicle(prev => ({ ...prev, [name]: name === 'year' ? Number(value) || '' : value }));
+    setVehicle(prev => ({
+      ...prev,
+      [name]: name === 'year' ? Number(value) || '' : value
+    }));
   };
 
-  const addPart = () => setParts([...parts, { description: '', quantity: 1, unitPrice: 0, commission: 10 }]);
-  const removePart = (index: number) => setParts(parts.filter((_, i) => i !== index));
+  const addPart = () =>
+    setParts([...parts, { description: '', quantity: 1, unitPrice: 0, commission: 10 }]);
+
+  const removePart = (index: number) =>
+    setParts(parts.filter((_, i) => i !== index));
+
   const handlePartChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newParts = [...parts];
-    (newParts[index] as any)[name] = name === 'description' ? value : Number(value);
+    (newParts[index] as any)[name] =
+      name === 'description' ? value : Number(value);
     setParts(newParts);
   };
 
-  const addService = () => setServices([...services, { description: '', mechanicExecutor: '', price: 0, commission: 10 }]);
-  const removeService = (index: number) => setServices(services.filter((_, i) => i !== index));
+  const addService = () =>
+    setServices([...services, { description: '', mechanicExecutor: '', price: 0, commission: 10 }]);
+
+  const removeService = (index: number) =>
+    setServices(services.filter((_, i) => i !== index));
+
   const handleServiceChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const newServices = [...services];
-    (newServices[index] as any)[name] = ['description', 'mechanicExecutor'].includes(name) ? value : Number(value);
+    (newServices[index] as any)[name] =
+      ['description', 'mechanicExecutor'].includes(name)
+        ? value
+        : Number(value);
     setServices(newServices);
   };
 
-  // --- Cálculos de totais ---
   const { totalBudget, totalCommissions } = useMemo(() => {
     const totalPartsPrice = parts.reduce((acc, part) => acc + (part.quantity * part.unitPrice), 0);
     const totalServicesPrice = services.reduce((acc, service) => acc + service.price, 0);
-    const partsCommission = parts.reduce((acc, part) => acc + (part.quantity * part.unitPrice * (part.commission / 100)), 0);
-    const servicesCommission = services.reduce((acc, service) => acc + service.price * (service.commission / 100), 0);
-    const totalCommissions = partsCommission + servicesCommission;
-    const totalBudget = totalPartsPrice + totalServicesPrice; // Total sem comissão para o cliente
-    return { totalBudget, totalCommissions };
+
+    const partsCommission = parts.reduce((acc, part) =>
+      acc + (part.quantity * part.unitPrice * (part.commission / 100)), 0);
+
+    const servicesCommission = services.reduce((acc, service) =>
+      acc + service.price * (service.commission / 100), 0);
+
+    return {
+      totalBudget: totalPartsPrice + totalServicesPrice,
+      totalCommissions: partsCommission + servicesCommission
+    };
   }, [parts, services]);
 
-  // --- Função para finalizar e salvar o orçamento ---
   const handleFinalizeEstimate = async () => {
     setError(null);
+
     const token = localStorage.getItem('authToken');
     if (!token) {
-      setError("Sessão expirada. Por favor, faça o login novamente.");
+      setError("Sessão expirada. Faça login novamente.");
+      return;
+    }
+
+    // 🔒 VALIDAÇÃO (evita erro 500)
+    if (!vehicle.clientName || !vehicle.plate || !vehicle.brand || !vehicle.model) {
+      setError("Preencha todos os dados obrigatórios do veículo.");
+      return;
+    }
+
+    if (!vehicle.year || Number(vehicle.year) <= 1900) {
+      setError("Ano do veículo inválido.");
       return;
     }
 
     const estimatePayload = {
-     vehicle: {
-     clientName: vehicle.clientName.trim(),
-     clientPhone: vehicle.clientPhone.trim(),
-     plate: vehicle.plate.trim(),
-     brand: vehicle.brand.trim(),
-     model: vehicle.model.trim(),
-     year: Number(vehicle.year), // 🔥 força number
-     },
-     parts: parts.map(p => ({
-     description: p.description.trim(),
-     quantity: Number(p.quantity),
-     unitPrice: Number(p.unitPrice),
-     commission: Number(p.commission),
-     })),
-     services: services.map(s => ({
-     description: s.description.trim(),
-     mechanicExecutor: s.mechanicExecutor.trim(),
-     price: Number(s.price),
-     commission: Number(s.commission),
-     })),
-     mechanicName: mechanicName.trim(),
-     observations: observations.trim(),
-     totalPrice: Number(totalBudget), // 🔥 garante número
+      vehicle: {
+        clientName: vehicle.clientName.trim(),
+        clientPhone: vehicle.clientPhone.trim(),
+        plate: vehicle.plate.trim(),
+        brand: vehicle.brand.trim(),
+        model: vehicle.model.trim(),
+        year: Number(vehicle.year),
+      },
+      parts: parts.map(p => ({
+        description: p.description.trim(),
+        quantity: Number(p.quantity),
+        unitPrice: Number(p.unitPrice),
+        commission: Number(p.commission),
+      })),
+      services: services.map(s => ({
+        description: s.description.trim(),
+        mechanicExecutor: s.mechanicExecutor.trim(),
+        price: Number(s.price),
+        commission: Number(s.commission),
+      })),
+      mechanicName: mechanicName.trim(),
+      observations: observations.trim(),
+      totalPrice: Number(totalBudget),
     };
+
+    console.log("Payload enviado:", estimatePayload); // 🔍 debug
 
     try {
       const API_URL = import.meta.env.VITE_API_URL;
 
       const response = await fetch(`${API_URL}/api/estimates`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(estimatePayload ),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(estimatePayload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro desconhecido ao salvar.');
+        throw new Error(errorData.message || 'Erro ao salvar.');
       }
 
       alert('Orçamento salvo com sucesso!');
-      // 3. CHAMANDO A FUNÇÃO: Após o sucesso, chama a função recebida para atualizar a lista no App.tsx.
       onEstimateCreated();
-      // Limpa o formulário para um novo orçamento
+
+      // reset
       setVehicle({ clientName: '', clientPhone: '', plate: '', brand: '', model: '', year: '' });
       setParts([]);
       setServices([]);
@@ -135,17 +174,15 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
       setObservations('');
 
     } catch (err: any) {
-      setError(err.message);
       console.error("Erro ao salvar:", err);
+      setError(err.message);
     }
   };
 
-  // --- Renderização do JSX ---
   return (
     <div className="form-container">
       <h2 className="form-title">Novo Orçamento</h2>
-      
-      {/* Seção de Dados do Veículo */}
+
       <div className="form-section">
         <h3 className="section-title">Dados do Veículo</h3>
         <div className="grid-inputs">
@@ -158,13 +195,20 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
         </div>
       </div>
 
-      {/* Seção de Peças e Serviços */}
       <div className="form-section">
         <h3 className="section-title">Peças e Serviços</h3>
-        {/* Tabela de Peças */}
+
         <h4>Peças</h4>
         <table className="items-table">
-          <thead><tr><th>Descrição</th><th>Qtd.</th><th>Preço Unit. (R$)</th><th>Subtotal (R$)</th><th>Ação</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Qtd.</th>
+              <th>Preço Unit.</th>
+              <th>Subtotal</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
           <tbody>
             {parts.map((part, index) => (
               <tr key={index}>
@@ -172,17 +216,17 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
                 <td><input name="quantity" type="number" value={part.quantity} onChange={(e) => handlePartChange(index, e)} /></td>
                 <td><input name="unitPrice" type="number" value={part.unitPrice} onChange={(e) => handlePartChange(index, e)} /></td>
                 <td>{(part.quantity * part.unitPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                <td><button className="remove-item-btn" onClick={() => removePart(index)}>X</button></td>
+                <td><button onClick={() => removePart(index)}>X</button></td>
               </tr>
             ))}
           </tbody>
         </table>
-        <button className="add-item-btn" onClick={addPart}>+ Adicionar Peça</button>
 
-        {/* Tabela de Mão de Obra */}
+        <button onClick={addPart}>+ Adicionar Peça</button>
+
         <h4 style={{ marginTop: '1.5rem' }}>Mão de Obra</h4>
+
         <table className="items-table">
-          <thead><tr><th>Descrição</th><th>Executor</th><th>Preço (R$)</th><th>Comissão (%)</th><th>Ação</th></tr></thead>
           <tbody>
             {services.map((service, index) => (
               <tr key={index}>
@@ -190,33 +234,25 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
                 <td><input name="mechanicExecutor" value={service.mechanicExecutor} onChange={(e) => handleServiceChange(index, e)} /></td>
                 <td><input name="price" type="number" value={service.price} onChange={(e) => handleServiceChange(index, e)} /></td>
                 <td><input name="commission" type="number" value={service.commission} onChange={(e) => handleServiceChange(index, e)} /></td>
-                <td><button className="remove-item-btn" onClick={() => removeService(index)}>X</button></td>
+                <td><button onClick={() => removeService(index)}>X</button></td>
               </tr>
             ))}
           </tbody>
         </table>
-        <button className="add-item-btn" onClick={addService}>+ Adicionar Serviço</button>
+
+        <button onClick={addService}>+ Adicionar Serviço</button>
       </div>
 
-      {/* Seção de Detalhes Finais */}
-      <div className="form-section">
-        <h3 className="section-title">Detalhes Finais</h3>
-        <div className="grid-inputs">
-          <input value={mechanicName} onChange={(e) => setMechanicName(e.target.value)} placeholder="Mecânico Responsável" />
-          <input value={observations} onChange={(e) => setObservations(e.target.value)} placeholder="Observações" />
-        </div>
-      </div>
-
-      {/* Totais e Ações */}
       <div className="form-summary">
-        <p><strong>Total do Orçamento:</strong> {totalBudget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-        <p><strong>Total de Comissões:</strong> {totalCommissions.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+        <p><strong>Total:</strong> {totalBudget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+        <p><strong>Comissões:</strong> {totalCommissions.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
       </div>
-      
+
       {error && <p className="form-error-message">{error}</p>}
+
       <div className="form-actions">
-        <button type="button" className="cancel-button" onClick={() => window.location.reload()}>Cancelar</button>
-        <button type="button" className="finalize-button" onClick={handleFinalizeEstimate}>Salvar Orçamento</button>
+        <button onClick={() => window.location.reload()}>Cancelar</button>
+        <button onClick={handleFinalizeEstimate}>Salvar Orçamento</button>
       </div>
     </div>
   );
