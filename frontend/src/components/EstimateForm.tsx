@@ -93,7 +93,9 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/api/estimates', {
+      const API_URL = import.meta.env.VITE_API_URL;
+
+      const response = await fetch(`${API_URL}/api/estimates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(estimatePayload ),
