@@ -90,6 +90,7 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
       services,
       mechanicName,
       observations,
+      totalPrice: totalBudget,
     };
 
     try {
