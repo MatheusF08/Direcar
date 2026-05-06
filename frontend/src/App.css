@@ -1,5 +1,55 @@
 /* =============================================== */
-/* Estilos para a Página de Login e Registro       */
+/* 1. VARIÁVEIS GLOBAIS DE CORES                   */
+/* =============================================== */
+:root {
+  --cor-fundo-pagina: #f4f7f9;
+  --cor-fundo-container: #ffffff;
+  --cor-fundo-escuro: #2c3e50;
+  --cor-texto-claro: #ffffff;
+  --cor-texto-escuro: #34495e;
+  --cor-texto-secundario: #7f8c8d;
+  --cor-primaria: #007bff;
+  --cor-primaria-hover: #0056b3;
+  --cor-borda: #dee2e6;
+  --cor-fundo-input: #e9ecef;
+}
+
+/* =============================================== */
+/* 2. RESET E PADRÕES GLOBAIS                      */
+/* =============================================== */
+
+body {
+  background-color: var(--cor-fundo-pagina);
+  color: var(--cor-texto-escuro);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+}
+
+/* 🔥 INPUT PADRÃO GLOBAL (corrige inconsistência) */
+input {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--cor-borda);
+  background-color: var(--cor-fundo-input);
+  color: var(--cor-texto-escuro);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 🔥 BOTÃO PADRÃO GLOBAL */
+button {
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* =============================================== */
+/* 3. LOGIN                                        */
 /* =============================================== */
 
 .login-page {
@@ -8,43 +58,29 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #333;
-  padding: 20px;
-  box-sizing: border-box;
+  background-color: var(--cor-fundo-escuro);
 }
 
 .login-title {
   font-size: 48px;
   font-weight: bold;
-  color: #ff6a00; /* Laranja Direcar */
+  color: var(--cor-primaria);
   margin-bottom: 40px;
   text-align: center;
 }
 
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .login-form {
-  background-color: #444;
+  background-color: var(--cor-fundo-container);
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 400px;
-  color: #f0f0f0;
 }
 
 .login-form h2 {
   text-align: center;
   margin-bottom: 25px;
-  color: #fff;
-}
-
-.input-group {
-  margin-bottom: 20px;
 }
 
 .input-group label {
@@ -53,58 +89,199 @@
   font-weight: bold;
 }
 
-.input-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background-color: #555;
-  color: #fff;
-  box-sizing: border-box;
-}
-
 .login-form button {
   width: 100%;
   padding: 12px;
-  border: none;
   border-radius: 4px;
-  background-color: #ff6a00; /* Laranja Direcar */
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-claro);
 }
 
 .login-form button:hover {
-  background-color: #e65c00;
-}
-
-.login-form button:disabled {
-  background-color: #999;
-  cursor: not-allowed;
-}
-
-.error-message {
-  color: #ff8a80;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.switch-form-text {
-  text-align: center;
-  margin-top: 20px;
+  background-color: var(--cor-primaria-hover);
 }
 
 .switch-form-link {
-  color: #ff6a00;
+  color: var(--cor-primaria);
   cursor: pointer;
   text-decoration: underline;
 }
 
+/* =============================================== */
+/* 4. HEADER E LAYOUT                              */
+/* =============================================== */
+
+.app-header {
+  background-color: var(--cor-fundo-container);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+main {
+  padding: 2rem;
+}
 
 /* =============================================== */
-/* Estilos para a Aplicação Principal (Pós-Login)  */
+/* 5. FORMULÁRIO                                   */
 /* =============================================== */
 
-/* Adicione aqui os estilos para .app-container, .app-header, etc. quando precisar */
+.form-container, .vehicle-list-container {
+  background: var(--cor-fundo-container);
+  padding: 2rem;
+  border-radius: 8px;
+  margin: 0 auto 2rem auto;
+  max-width: 1200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
 
+.section-title {
+  border-bottom: 2px solid var(--cor-primaria);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--cor-primaria);
+}
+
+.grid-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+/* =============================================== */
+/* 6. TABELAS                                      */
+/* =============================================== */
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.items-table th, .items-table td {
+  border: 1px solid var(--cor-borda);
+  padding: 0.75rem;
+}
+
+.items-table th {
+  background-color: var(--cor-fundo-escuro); /* 🔥 corrigido */
+  color: var(--cor-texto-claro);
+}
+
+.items-table tr:nth-child(even) {
+  background-color: var(--cor-fundo-input);
+}
+
+.items-table input {
+  background-color: var(--cor-fundo-container);
+}
+
+/* =============================================== */
+/* 7. BOTÕES ESPECÍFICOS                           */
+/* =============================================== */
+
+.add-item-btn,
+.finalize-button {
+  background: var(--cor-primaria);
+  color: var(--cor-texto-claro);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.add-item-btn:hover,
+.finalize-button:hover {
+  background: var(--cor-primaria-hover);
+}
+
+.remove-item-btn {
+  background-color: #e74c3c;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.cancel-button {
+  background-color: var(--cor-texto-secundario);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+}
+
+/* =============================================== */
+/* 8. LISTA DE ORÇAMENTOS                          */
+/* =============================================== */
+
+.status-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.status-filters button {
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--cor-borda);
+  background-color: var(--cor-fundo-input);
+  border-radius: 20px;
+}
+
+.status-filters button.active {
+  background-color: var(--cor-primaria);
+  color: var(--cor-texto-claro);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.estimates-table th {
+  background-color: var(--cor-fundo-escuro);
+  color: var(--cor-texto-claro);
+}
+
+.estimates-table tr:nth-child(even) {
+  background-color: var(--cor-fundo-input);
+}
+
+.estimates-table tr:hover {
+  background-color: #d4eaff;
+}
+
+.status {
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  min-width: 100px;
+}
+
+.status-ag-aprovacao { background-color: #f39c12; }
+.status-aprovado { background-color: #2ecc71; }
+.status-finalizado { background-color: #3498db; }
+.status-cancelado { background-color: #e74c3c; }
+
+.action-button {
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  color: white;
+}
+
+.action-button.view { background-color: #3498db; }
+.action-button.pdf { background-color: #9b59b6; }
+.action-button.delete { background-color: #e74c3c; }
+
+/* =============================================== */
+/* 9. ERROS                                        */
+/* =============================================== */
+
+.form-error-message {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-top: 1rem;
+}
