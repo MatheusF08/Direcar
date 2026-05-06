@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import * as EstimateService from '../services/estimate.service';
 
+/**
+ * CREATE ESTIMATE
+ */
 export const create = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Não autorizado.' });
@@ -13,13 +16,19 @@ export const create = async (req: Request, res: Response) => {
     };
 
     const newEstimate = await EstimateService.createEstimate(estimateData);
-    res.status(201).json(newEstimate);
+
+    return res.status(201).json(newEstimate);
   } catch (error: any) {
-    console.error("Erro ao criar orçamento:", error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+    console.error("🔥 Erro ao criar orçamento:", error);
+    return res.status(500).json({
+      message: error.message || 'Erro interno do servidor.'
+    });
   }
 };
 
+/**
+ * GET ALL ESTIMATES
+ */
 export const getAll = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Não autorizado.' });
@@ -27,13 +36,19 @@ export const getAll = async (req: Request, res: Response) => {
 
   try {
     const estimates = await EstimateService.getAllEstimates(req.user.userId);
-    res.json(estimates);
-  } catch (error) {
-    console.error("Erro ao buscar orçamentos:", error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+
+    return res.status(200).json(estimates);
+  } catch (error: any) {
+    console.error("🔥 Erro ao buscar orçamentos:", error);
+    return res.status(500).json({
+      message: error.message || 'Erro interno do servidor.'
+    });
   }
 };
 
+/**
+ * GET BY ID
+ */
 export const getById = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Não autorizado.' });
@@ -41,37 +56,63 @@ export const getById = async (req: Request, res: Response) => {
 
   try {
     const id = Number(req.params.id);
-    const estimate = await EstimateService.getEstimateById(id, req.user.userId);
+
+    const estimate = await EstimateService.getEstimateById(
+      id,
+      req.user.userId
+    );
 
     if (!estimate) {
-      return res.status(404).json({ message: 'Orçamento não encontrado.' });
+      return res.status(404).json({
+        message: 'Orçamento não encontrado.'
+      });
     }
 
-    res.json(estimate);
-  } catch (error) {
-    console.error("Erro ao buscar orçamento:", error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+    return res.status(200).json(estimate);
+  } catch (error: any) {
+    console.error("🔥 Erro ao buscar orçamento:", error);
+    return res.status(500).json({
+      message: error.message || 'Erro interno do servidor.'
+    });
   }
 };
 
-export const updateStatus = async (req: Request, res: Response) => {
+/**
+ * 🔥 UPDATE COMPLETO (EDITAR TUDO)
+ * - status
+ * - peças
+ * - serviços
+ * - observações
+ * - mecânico
+ */
+export const updateFull = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Não autorizado.' });
   }
 
   try {
     const id = Number(req.params.id);
-    const { status } = req.body;
 
-    const updated = await EstimateService.updateEstimateStatus(id, status, req.user.userId);
-    res.json(updated);
-  } catch (error) {
-    console.error("Erro ao atualizar status:", error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+    const updatedEstimate = await EstimateService.updateEstimateFull(
+      id,
+      req.body,
+      req.user.userId
+    );
+
+    return res.status(200).json(updatedEstimate);
+  } catch (error: any) {
+    console.error("🔥 Erro ao atualizar orçamento:", error);
+
+    return res.status(500).json({
+      message: error.message || 'Erro ao atualizar orçamento.'
+    });
   }
 };
 
-export const remove = async (req: Request, res: Response) => {
+/**
+ * DELETE
+ */
+export const deleteEstimate = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Não autorizado.' });
   }
@@ -80,9 +121,15 @@ export const remove = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
 
     await EstimateService.deleteEstimate(id, req.user.userId);
-    res.json({ message: 'Orçamento deletado com sucesso.' });
-  } catch (error) {
-    console.error("Erro ao deletar orçamento:", error);
-    res.status(500).json({ message: 'Erro interno do servidor.' });
+
+    return res.status(200).json({
+      message: 'Orçamento deletado com sucesso.'
+    });
+  } catch (error: any) {
+    console.error("🔥 Erro ao deletar orçamento:", error);
+
+    return res.status(500).json({
+      message: error.message || 'Erro interno do servidor.'
+    });
   }
 };
