@@ -85,12 +85,29 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
     }
 
     const estimatePayload = {
-      vehicle,
-      parts,
-      services,
-      mechanicName,
-      observations,
-      totalPrice: totalBudget,
+     vehicle: {
+     clientName: vehicle.clientName.trim(),
+     clientPhone: vehicle.clientPhone.trim(),
+     plate: vehicle.plate.trim(),
+     brand: vehicle.brand.trim(),
+     model: vehicle.model.trim(),
+     year: Number(vehicle.year), // 🔥 força number
+     },
+     parts: parts.map(p => ({
+     description: p.description.trim(),
+     quantity: Number(p.quantity),
+     unitPrice: Number(p.unitPrice),
+     commission: Number(p.commission),
+     })),
+     services: services.map(s => ({
+     description: s.description.trim(),
+     mechanicExecutor: s.mechanicExecutor.trim(),
+     price: Number(s.price),
+     commission: Number(s.commission),
+     })),
+     mechanicName: mechanicName.trim(),
+     observations: observations.trim(),
+     totalPrice: Number(totalBudget), // 🔥 garante número
     };
 
     try {
