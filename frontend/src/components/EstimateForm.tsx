@@ -107,13 +107,13 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
       return;
     }
 
-    // 🔒 VALIDAÇÃO (evita erro 500)
+    // 🔒 VALIDAÇÃO
     if (!vehicle.clientName || !vehicle.plate || !vehicle.brand || !vehicle.model) {
       setError("Preencha todos os dados obrigatórios do veículo.");
       return;
     }
 
-    if (!vehicle.year || Number(vehicle.year) <= 1900) {
+    if (!vehicle.year || Number(vehicle.year) < 1900) {
       setError("Ano do veículo inválido.");
       return;
     }
@@ -121,30 +121,37 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
     const estimatePayload = {
       vehicle: {
         clientName: vehicle.clientName.trim(),
-        clientPhone: vehicle.clientPhone.trim(),
+        clientPhone: vehicle.clientPhone?.trim() || '',
         plate: vehicle.plate.trim(),
         brand: vehicle.brand.trim(),
         model: vehicle.model.trim(),
         year: Number(vehicle.year),
       },
-      parts: parts.map(p => ({
-        description: p.description.trim(),
-        quantity: Number(p.quantity),
-        unitPrice: Number(p.unitPrice),
-        commission: Number(p.commission),
-      })),
-      services: services.map(s => ({
-        description: s.description.trim(),
-        mechanicExecutor: s.mechanicExecutor.trim(),
-        price: Number(s.price),
-        commission: Number(s.commission),
-      })),
-      mechanicName: mechanicName.trim(),
-      observations: observations.trim(),
-      totalPrice: Number(totalBudget),
+
+      parts: parts
+        .filter(p => p.description && p.quantity > 0)
+        .map(p => ({
+          description: p.description.trim(),
+          quantity: Number(p.quantity),
+          unitPrice: Number(p.unitPrice),
+          commission: Number(p.commission),
+        })),
+
+      services: services
+        .filter(s => s.description && s.price > 0)
+        .map(s => ({
+          description: s.description.trim(),
+          mechanicExecutor: s.mechanicExecutor?.trim() || '',
+          price: Number(s.price),
+          commission: Number(s.commission),
+        })),
+
+      mechanicName: mechanicName?.trim() || "Não informado",
+      observations: observations?.trim() || '',
+      totalPrice: Number(totalBudget) || 0,
     };
 
-    console.log("Payload enviado:", estimatePayload); // 🔍 debug
+    console.log("Payload enviado:", estimatePayload);
 
     try {
       const API_URL = import.meta.env.VITE_API_URL;
@@ -166,7 +173,6 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
       alert('Orçamento salvo com sucesso!');
       onEstimateCreated();
 
-      // reset
       setVehicle({ clientName: '', clientPhone: '', plate: '', brand: '', model: '', year: '' });
       setParts([]);
       setServices([]);
@@ -188,10 +194,10 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
         <div className="grid-inputs">
           <input name="clientName" value={vehicle.clientName} onChange={handleVehicleChange} placeholder="Nome do Cliente" />
           <input name="clientPhone" value={vehicle.clientPhone} onChange={handleVehicleChange} placeholder="Telefone" />
-          <input name="plate" value={vehicle.plate} onChange={handleVehicleChange} placeholder="Placa" />
-          <input name="brand" value={vehicle.brand} onChange={handleVehicleChange} placeholder="Marca" />
-          <input name="model" value={vehicle.model} onChange={handleVehicleChange} placeholder="Modelo" />
-          <input name="year" type="number" value={vehicle.year} onChange={handleVehicleChange} placeholder="Ano" />
+          <input name="plate" value={vehicle.plate} onChange={handleVehicleChange} placeholder="Placa do veículo" />
+          <input name="brand" value={vehicle.brand} onChange={handleVehicleChange} placeholder="Marca (Ex: Fiat)" />
+          <input name="model" value={vehicle.model} onChange={handleVehicleChange} placeholder="Modelo (Ex: Palio)" />
+          <input name="year" type="number" value={vehicle.year} onChange={handleVehicleChange} placeholder="Ano (Ex: 2009)" />
         </div>
       </div>
 
@@ -212,7 +218,7 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
           <tbody>
             {parts.map((part, index) => (
               <tr key={index}>
-                <td><input name="description" value={part.description} onChange={(e) => handlePartChange(index, e)} /></td>
+                <td><input name="description" value={part.description} onChange={(e) => handlePartChange(index, e)} placeholder="Ex: Óleo" /></td>
                 <td><input name="quantity" type="number" value={part.quantity} onChange={(e) => handlePartChange(index, e)} /></td>
                 <td><input name="unitPrice" type="number" value={part.unitPrice} onChange={(e) => handlePartChange(index, e)} /></td>
                 <td>{(part.quantity * part.unitPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
@@ -230,8 +236,8 @@ const EstimateForm: React.FC<EstimateFormProps> = ({ onEstimateCreated }) => {
           <tbody>
             {services.map((service, index) => (
               <tr key={index}>
-                <td><input name="description" value={service.description} onChange={(e) => handleServiceChange(index, e)} /></td>
-                <td><input name="mechanicExecutor" value={service.mechanicExecutor} onChange={(e) => handleServiceChange(index, e)} /></td>
+                <td><input name="description" value={service.description} onChange={(e) => handleServiceChange(index, e)} placeholder="Ex: Troca de óleo" /></td>
+                <td><input name="mechanicExecutor" value={service.mechanicExecutor} onChange={(e) => handleServiceChange(index, e)} placeholder="Executor" /></td>
                 <td><input name="price" type="number" value={service.price} onChange={(e) => handleServiceChange(index, e)} /></td>
                 <td><input name="commission" type="number" value={service.commission} onChange={(e) => handleServiceChange(index, e)} /></td>
                 <td><button onClick={() => removeService(index)}>X</button></td>
